@@ -1,9 +1,10 @@
-import { streamText, stepCountIs } from "ai";
+import { streamText, stepCountIs, convertToModelMessages } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { createMCPClient } from "@ai-sdk/mcp";
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages: uiMessages } = await req.json();
+  const messages = await convertToModelMessages(uiMessages);
 
   const mcpClient = await createMCPClient({
     name: "web3-address-query",
