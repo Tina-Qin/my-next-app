@@ -1,5 +1,5 @@
 import { streamText, stepCountIs, convertToModelMessages } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 import { createMCPClient } from "@ai-sdk/mcp";
 
 export async function POST(req: Request) {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   const result = streamText({
-    model: openai("gpt-4o"),
+    model: anthropic("claude-sonnet-4-20250514"),
     system: `You are a Web3 address analyst. The user will provide a blockchain address.
 Use the available MCP tools to query all relevant information about this address — balance, transactions, token holdings, contract info, etc.
 Present your findings in clear markdown with sections and formatting.
