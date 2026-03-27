@@ -188,7 +188,9 @@ export default function Home() {
   );
 }
 
-function ToolCallCard({ name, state }: { name: string; state: string }) {
+type ToolState = "input-streaming" | "input-available" | "output-available" | "approval-requested" | "approval-responded" | "output-error" | "output-denied";
+
+function ToolCallCard({ name, state }: { name: string; state: ToolState }) {
   const stateLabel =
     state === "output-available"
       ? "completed"
@@ -214,8 +216,17 @@ function ToolCallCard({ name, state }: { name: string; state: string }) {
   );
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function formatMarkdown(text: string): string {
-  return text
+  const escaped = escapeHtml(text);
+  return escaped
     .replace(
       /```(\w*)\n([\s\S]*?)```/g,
       '<pre class="bg-white/5 rounded-lg p-3 my-2 overflow-x-auto text-xs"><code>$2</code></pre>',
