@@ -5,6 +5,7 @@ import { DefaultChatTransport } from "ai";
 import { useState, useRef, useEffect, type CSSProperties } from "react";
 import { isToolUIPart, getToolName } from "ai";
 import Image from "next/image";
+import { Package, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -17,6 +18,32 @@ const SUGGESTIONS = [
   "介绍一下在售产品信息，我想了解如何买入或认购",
   "这些产品的收益、费用、赎回规则和风险有哪些？请面向交易决策说明。",
   "我想用钱包地址查一下我的订单与持仓",
+];
+
+const SKILL_LINKS: {
+  id: string;
+  label: string;
+  href: string;
+  Icon: LucideIcon;
+}[] = [
+  {
+    id: "antalpha-rwa-skill",
+    label: "antalpha-rwa-skill",
+    href: "https://github.com/AntalphaAI/antalpha-rwa-skill",
+    Icon: Package,
+  },
+  {
+    id: "web3-trader",
+    label: "web3-trader",
+    href: "https://github.com/AntalphaAI/web3-trader",
+    Icon: TrendingUp,
+  },
+  {
+    id: "wallet-balance",
+    label: "wallet-balance",
+    href: "https://github.com/AntalphaAI/wallet-balance",
+    Icon: Wallet,
+  },
 ];
 
 const HERO_TAGS: { label: string; sub: string; mono?: boolean; delay: string }[] = [
@@ -32,6 +59,28 @@ const PARTICLE_STYLE: { top: string; left: string; delay: string }[] = [
   { top: "72%", left: "20%", delay: "0.4s" },
   { top: "28%", left: "48%", delay: "1.2s" },
 ];
+
+function SkillLinksRow() {
+  return (
+    <div
+      className="flex flex-wrap items-center gap-2"
+      aria-label="相关开源 Skill 仓库"
+    >
+      {SKILL_LINKS.map(({ id, label, href, Icon }) => (
+        <a
+          key={id}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex max-w-full items-center gap-2 rounded-full bg-[#333333] px-3.5 py-2 text-[13px] leading-none text-zinc-50 transition-colors hover:bg-zinc-700"
+        >
+          <Icon className="size-4 shrink-0 text-[#5B8DEF]" aria-hidden />
+          <span className="truncate font-normal">{label}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
 
 function NinaMidBand() {
   return (
@@ -394,40 +443,43 @@ export default function Home() {
             <p className="text-[11px] text-zinc-400">Antalpha RWA 助手</p>
           </div>
         </div>
-        <form
-          onSubmit={handleSubmit}
-          className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center"
-        >
-          <div className="nina-glow-frame min-w-0 flex-1">
-            <div className="nina-glow-frame__inner flex min-h-11 min-w-0 items-center gap-2 px-3 py-1.5 sm:min-h-12 sm:px-4 sm:py-2">
-              <Input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="例如：我想了解在售 RWA 如何买入与风险"
-                disabled={isStreaming}
-                className="h-9 min-h-9 flex-1 border-0 bg-transparent px-0 text-sm text-zinc-100 shadow-none placeholder:text-zinc-500 focus-visible:ring-0 sm:h-10 sm:min-h-10"
-              />
-              <Button
-                type="submit"
-                disabled={!input.trim() || isStreaming}
-                className="h-9 shrink-0 rounded-xl bg-zinc-50 px-4 font-semibold text-zinc-950 hover:bg-white sm:h-10 sm:px-5"
-              >
-                {isStreaming ? "回复中…" : "发送"}
-              </Button>
+        <div className="mx-auto w-full max-w-6xl space-y-3">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+          >
+            <div className="nina-glow-frame min-w-0 flex-1">
+              <div className="nina-glow-frame__inner flex min-h-11 min-w-0 items-center gap-2 px-3 py-1.5 sm:min-h-12 sm:px-4 sm:py-2">
+                <Input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="例如：我想了解在售 RWA 如何买入与风险"
+                  disabled={isStreaming}
+                  className="h-9 min-h-9 flex-1 border-0 bg-transparent px-0 text-sm text-zinc-100 shadow-none placeholder:text-zinc-500 focus-visible:ring-0 sm:h-10 sm:min-h-10"
+                />
+                <Button
+                  type="submit"
+                  disabled={!input.trim() || isStreaming}
+                  className="h-9 shrink-0 rounded-xl bg-zinc-50 px-4 font-semibold text-zinc-950 hover:bg-white sm:h-10 sm:px-5"
+                >
+                  {isStreaming ? "回复中…" : "发送"}
+                </Button>
+              </div>
             </div>
-          </div>
-          {messages.length > 0 && !isStreaming ? (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleClear}
-              className="text-zinc-500 hover:bg-zinc-800/80 hover:text-zinc-200"
-            >
-              清除对话
-            </Button>
-          ) : null}
-        </form>
+            {messages.length > 0 && !isStreaming ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClear}
+                className="text-zinc-500 hover:bg-zinc-800/80 hover:text-zinc-200"
+              >
+                清除对话
+              </Button>
+            ) : null}
+          </form>
+          <SkillLinksRow />
+        </div>
       </div>
 
       <footer className="shrink-0 px-4 pb-3 pt-1">
