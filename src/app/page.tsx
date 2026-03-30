@@ -199,7 +199,7 @@ function NinaWeb3Hero({
 export default function Home() {
   const [input, setInput] = useState("");
   const { messages, setMessages, sendMessage, status } = useChat({ transport });
-  const resultRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatSectionRef = useRef<HTMLElement>(null);
 
   const isStreaming = status === "streaming";
@@ -220,9 +220,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (isStreaming) {
-      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, isStreaming]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -253,8 +251,8 @@ export default function Home() {
         />
         <NinaMidBand />
         <NinaTradeBrief scrollToChat={scrollToChat} />
-        <main ref={chatSectionRef} className="scroll-mt-4 px-4 py-6">
-          <div className="mx-auto w-full max-w-3xl space-y-5">
+        <main ref={chatSectionRef} className="scroll-mt-4 px-4 py-6 sm:px-6">
+          <div className="mx-auto w-full max-w-6xl space-y-5">
           {!hasResults && !isStreaming && (
             <div className="space-y-5">
               <p className="text-[13px] leading-relaxed text-zinc-400">
@@ -304,75 +302,86 @@ export default function Home() {
             </div>
           )}
 
-          <div ref={resultRef} className="space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className="space-y-2">
-                {message.role === "user"
-                  ? message.parts.map((part, i) =>
-                      part.type === "text" ? (
-                        <div
-                          key={`${message.id}-u-${i}`}
-                          className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-100"
-                        >
-                          {part.text}
-                        </div>
-                      ) : null,
-                    )
-                  : null}
-                {message.role === "assistant" ? (
-                  <div className="flex gap-3">
-                    <Image
-                      src={ASSISTANT_AVATAR}
-                      alt={ASSISTANT_NAME}
-                      width={32}
-                      height={32}
-                      className="mt-0.5 size-8 shrink-0 rounded-full object-cover ring-1 ring-zinc-700/60"
-                    />
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <p className="text-[10px] font-medium text-zinc-500">{ASSISTANT_NAME}</p>
-                      {message.parts.map((part, i) => {
-                        if (part.type === "text") {
-                          return (
+          {messages.length > 0 || isStreaming ? (
+            <div className="nina-glow-frame w-full">
+              <div
+                className="nina-glow-frame__inner nina-messages-scroll max-h-[min(32vh,17rem)] w-full overflow-y-auto overflow-x-hidden p-3.5 sm:max-h-[min(34vh,18rem)] sm:p-4"
+                aria-label="对话消息"
+              >
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div key={message.id} className="space-y-2">
+                    {message.role === "user"
+                      ? message.parts.map((part, i) =>
+                          part.type === "text" ? (
                             <div
-                              key={`${message.id}-${i}`}
-                              className="rounded-2xl border border-zinc-800 bg-zinc-900 px-3.5 py-3.5 shadow-sm shadow-black/20"
+                              key={`${message.id}-u-${i}`}
+                              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-100"
                             >
-                              <div
-                                className="text-[13px] leading-relaxed text-zinc-200 [&_strong]:font-semibold [&_strong]:text-zinc-50"
-                                dangerouslySetInnerHTML={{
-                                  __html: formatMarkdown(part.text),
-                                }}
-                              />
+                              {part.text}
                             </div>
-                          );
-                        }
-                        if (isToolUIPart(part)) {
-                          return (
-                            <ToolCallRow
-                              key={`${message.id}-${i}`}
-                              name={getToolName(part)}
-                              state={part.state}
-                            />
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
+                          ) : null,
+                        )
+                      : null}
+                    {message.role === "assistant" ? (
+                      <div className="flex gap-3">
+                        <Image
+                          src={ASSISTANT_AVATAR}
+                          alt={ASSISTANT_NAME}
+                          width={32}
+                          height={32}
+                          className="mt-0.5 size-8 shrink-0 rounded-full object-cover ring-1 ring-zinc-700/60"
+                        />
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <p className="text-[10px] font-medium text-zinc-500">{ASSISTANT_NAME}</p>
+                          {message.parts.map((part, i) => {
+                            if (part.type === "text") {
+                              return (
+                                <div
+                                  key={`${message.id}-${i}`}
+                                  className="rounded-2xl border border-zinc-800 bg-zinc-900 px-3.5 py-3.5 shadow-sm shadow-black/20"
+                                >
+                                  <div
+                                    className="text-[13px] leading-relaxed text-zinc-200 [&_strong]:font-semibold [&_strong]:text-zinc-50"
+                                    dangerouslySetInnerHTML={{
+                                      __html: formatMarkdown(part.text),
+                                    }}
+                                  />
+                                </div>
+                              );
+                            }
+                            if (isToolUIPart(part)) {
+                              return (
+                                <ToolCallRow
+                                  key={`${message.id}-${i}`}
+                                  name={getToolName(part)}
+                                  state={part.state}
+                                />
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            ))}
+                ))}
 
-            {isStreaming && !hasResults ? (
-              <p className="text-sm text-zinc-500">正在处理（可能正在调用产品接口）…</p>
-            ) : null}
-          </div>
+                {isStreaming && !hasResults ? (
+                  <p className="text-sm text-zinc-500">正在处理（可能正在调用产品接口）…</p>
+                ) : null}
+
+                <div ref={messagesEndRef} className="h-px shrink-0" aria-hidden />
+              </div>
+              </div>
+            </div>
+          ) : null}
         </div>
         </main>
       </div>
 
-      <div className="sticky bottom-0 z-20 shrink-0 border-t border-zinc-800/80 bg-[#09090b]/90 px-4 pb-3 pt-3 backdrop-blur-md supports-backdrop-filter:bg-[#09090b]/70">
-        <div className="mx-auto mb-3 flex max-w-3xl items-center gap-3">
+      <div className="sticky bottom-0 z-20 shrink-0 border-t border-zinc-800/80 bg-[#09090b]/90 px-4 pb-3 pt-3 backdrop-blur-md supports-backdrop-filter:bg-[#09090b]/70 sm:px-6">
+        <div className="mx-auto mb-3 flex max-w-6xl items-center gap-3">
           <Image
             src={ASSISTANT_AVATAR}
             alt={ASSISTANT_NAME}
@@ -387,24 +396,26 @@ export default function Home() {
         </div>
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center"
+          className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center"
         >
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-zinc-800 bg-[#121214] p-1 pl-3 shadow-inner shadow-black/30">
-            <Input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="例如：我想了解在售 RWA 如何买入与风险"
-              disabled={isStreaming}
-              className="h-10 flex-1 border-0 bg-transparent px-0 text-sm text-zinc-100 shadow-none placeholder:text-zinc-500 focus-visible:ring-0"
-            />
-            <Button
-              type="submit"
-              disabled={!input.trim() || isStreaming}
-              className="h-10 shrink-0 rounded-xl bg-zinc-50 px-5 font-semibold text-zinc-950 hover:bg-white"
-            >
-              {isStreaming ? "回复中…" : "发送"}
-            </Button>
+          <div className="nina-glow-frame min-w-0 flex-1">
+            <div className="nina-glow-frame__inner flex min-h-11 min-w-0 items-center gap-2 px-3 py-1.5 sm:min-h-12 sm:px-4 sm:py-2">
+              <Input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="例如：我想了解在售 RWA 如何买入与风险"
+                disabled={isStreaming}
+                className="h-9 min-h-9 flex-1 border-0 bg-transparent px-0 text-sm text-zinc-100 shadow-none placeholder:text-zinc-500 focus-visible:ring-0 sm:h-10 sm:min-h-10"
+              />
+              <Button
+                type="submit"
+                disabled={!input.trim() || isStreaming}
+                className="h-9 shrink-0 rounded-xl bg-zinc-50 px-4 font-semibold text-zinc-950 hover:bg-white sm:h-10 sm:px-5"
+              >
+                {isStreaming ? "回复中…" : "发送"}
+              </Button>
+            </div>
           </div>
           {messages.length > 0 && !isStreaming ? (
             <Button

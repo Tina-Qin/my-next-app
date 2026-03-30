@@ -133,6 +133,47 @@ body {
   }
 }
 
+/* Chat panel + composer: wide / low, Gemini-like gradient hairline + inner well */
+.nina-glow-frame {
+  border-radius: 1.5rem;
+  padding: 1px;
+  background: linear-gradient(
+    125deg,
+    rgba(139, 92, 246, 0.55),
+    rgba(34, 211, 238, 0.4),
+    rgba(232, 121, 249, 0.45),
+    rgba(99, 102, 241, 0.5)
+  );
+  box-shadow:
+    0 0 24px -8px rgba(139, 92, 246, 0.15),
+    0 0 24px -8px rgba(34, 211, 238, 0.1);
+}
+
+.nina-glow-frame__inner {
+  border-radius: calc(1.5rem - 1px);
+  background: linear-gradient(180deg, #131316 0%, #0e0e11 100%);
+}
+
+/* Chat message panel: lower max height, internal scroll */
+.nina-messages-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(63 63 70 / 0.85) transparent;
+}
+
+.nina-messages-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.nina-messages-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nina-messages-scroll::-webkit-scrollbar-thumb {
+  background: rgb(63 63 70 / 0.85);
+  border-radius: 9999px;
+}
+
 /* Nina empty-state intro — Octok-like stagger + shimmer (respect reduced motion) */
 @keyframes nina-intro-in {
   from {
