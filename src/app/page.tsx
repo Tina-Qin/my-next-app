@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Package, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const transport = new DefaultChatTransport({ api: "/api/chat" });
 
@@ -358,7 +359,7 @@ export default function Home() {
                 aria-label="对话消息"
               >
               <div className="space-y-4">
-                {messages.map((message) => (
+                {messages.map((message, msgIndex) => (
                   <div key={message.id} className="space-y-2">
                     {message.role === "user"
                       ? message.parts.map((part, i) =>
@@ -385,18 +386,27 @@ export default function Home() {
                           <p className="text-[10px] font-medium text-zinc-500">{ASSISTANT_NAME}</p>
                           {message.parts.map((part, i) => {
                             if (part.type === "text") {
+                              let lastTextPartIndex = -1;
+                              for (let j = message.parts.length - 1; j >= 0; j--) {
+                                if (message.parts[j].type === "text") {
+                                  lastTextPartIndex = j;
+                                  break;
+                                }
+                              }
+                              const isLastTextPart = i === lastTextPartIndex;
+                              const isTextStreaming =
+                                part.state === "streaming" ||
+                                (isStreaming &&
+                                  msgIndex === messages.length - 1 &&
+                                  isLastTextPart &&
+                                  message.role === "assistant");
+
                               return (
-                                <div
+                                <AssistantTextBubble
                                   key={`${message.id}-${i}`}
-                                  className="rounded-2xl border border-zinc-800 bg-zinc-900 px-3.5 py-3.5 shadow-sm shadow-black/20"
-                                >
-                                  <div
-                                    className="text-[13px] leading-relaxed text-zinc-200 [&_strong]:font-semibold [&_strong]:text-zinc-50"
-                                    dangerouslySetInnerHTML={{
-                                      __html: formatMarkdown(part.text),
-                                    }}
-                                  />
-                                </div>
+                                  html={formatMarkdown(part.text)}
+                                  isTextStreaming={isTextStreaming}
+                                />
                               );
                             }
                             if (isToolUIPart(part)) {
@@ -499,6 +509,45 @@ type ToolState =
   | "approval-responded"
   | "output-error"
   | "output-denied";
+
+function AssistantTextBubble({
+  html,
+  isTextStreaming,
+}: {
+  html: string;
+  isTextStreaming: boolean;
+}) {
+  const innerHtml =
+    html +
+    (isTextStreaming
+      ? '<span class="nina-cyber-cursor-wrap" aria-hidden="true"><span class="nina-cyber-cursor"></span></span>'
+      : "");
+
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl border px-3.5 py-3.5 shadow-sm",
+        isTextStreaming
+          ? "nina-cyber-bubble nina-cyber-bubble--active border-violet-500/35 bg-zinc-950/95 shadow-black/30"
+          : "border-zinc-800 bg-zinc-900 shadow-black/20",
+      )}
+    >
+      {isTextStreaming ? (
+        <>
+          <div className="nina-cyber-scanline" aria-hidden />
+          <div className="nina-cyber-noise" aria-hidden />
+        </>
+      ) : null}
+      <div
+        className={cn(
+          "relative z-2 text-[13px] leading-relaxed text-zinc-200 [&_pre]:relative [&_pre]:z-2 [&_strong]:font-semibold [&_strong]:text-zinc-50",
+          isTextStreaming && "nina-cyber-markdown--stream",
+        )}
+        dangerouslySetInnerHTML={{ __html: innerHtml }}
+      />
+    </div>
+  );
+}
 
 function ToolCallRow({ name, state }: { name: string; state: ToolState }) {
   const stateLabel =
